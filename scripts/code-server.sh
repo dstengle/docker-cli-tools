@@ -26,14 +26,13 @@ CONTAINER_DIR="/home/coder/$BASE_DIRNAME"
 CONTAINER_OPEN_ARG="$CONTAINER_DIR/$TARGET_FILE"
 #CONTAINER_OPEN_ARG="$CONTAINER_DIR"
 
-set -x
-
 DOCKER_NAME="code-server"
 
 docker run --rm --name "$DOCKER_NAME" -p 127.0.0.1:8080:8080  \
   -v "$ABS_DIRECTORY:$CONTAINER_DIR" codercom/code-server:v2 \
   --auth none $CONTAINER_DIR $CONTAINER_OPEN_ARG & 
 
+DOCKERPID=$!
 
 trap "docker stop $DOCKER_NAME" EXIT
 
@@ -41,5 +40,8 @@ sleep 1
 
 xdg-open "http://127.0.0.1:8080"
 
+case $(ps -o stat= -p $$) in
+  *+*) read -rs -n1  ;;
+  *) wait $DOCKERPID ;;
+esac
 
-read -rs -n1
